@@ -4,9 +4,10 @@ author: "Matthew Sadosuk"
 date: "4/1/2021"
 output:
   html_document:
-  toc: true
-  toc_float: true
-  df_print : paged 
+    toc: true
+    toc_depth: 1
+    toc_float: true
+    df_print: paged  
 ---
 
 
