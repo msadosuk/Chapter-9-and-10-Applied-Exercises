@@ -1,7 +1,7 @@
 ---
 title: "Team 10"
-author: "Matthew Sadosuk"
-date: "4/1/2021"
+author: "Matthew Sadosuk, Akram Bijapuri, Justin Pender, Alejandro Valencia Patino"
+date: "4/6/2021"
 output:
   html_document:
     toc: true
@@ -17,6 +17,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Machine Learning 2 Summary Document {.tabset}
 
+## Chapter 9
+
+# Chapter 9 applied exercise {.tabset}
 
 For this exercise in chapter 9 we go back and cover support vector classifiers. 
 At the end of the chapter we selected applied exercise 8. This exercise features
@@ -197,5 +200,186 @@ Overall, radial basis kernel seems to be producing minimum misclassification
 error on training set but the linear kernel performs better on test data.
 
 
+## Chapter 10
 
 # Chapter 10 applied exercise {.tabset}
+
+"""
+(a) Generate a simulated data set with 20 observations in each of
+three classes (i.e. 60 observations total), and 50 variables.
+Hint: There are a number of functions in R that you can use to
+generate data. One example is the rnorm() function; runif() is
+another option. Be sure to add a mean shift to the observations
+in each class so that there are three distinct classes.
+"""
+
+```{r}
+#(a) Generate a simulated data set with 20 observations in each of three classes 
+set.seed(11)
+
+class1 <- matrix(rnorm(20*50, mean = -3), nrow=20) #simulated random data
+class2 <- matrix(rnorm(20*50, mean = 0), nrow=20) #simulated random data
+class3 <- matrix(rnorm(20*50, mean = 3), nrow=20) #simulated random data
+
+df <- data.frame(rbind(class1,class2,class3))
+
+mean(rowMeans(df)[1:20])
+mean(rowMeans(df)[21:40])
+mean(rowMeans(df)[41:60])
+
+plot(df$X1, main="Do you see any possible clusters in variable 1?",
+     xlab ="Row Index", ylab="df$X1 Value", pch =20, cex =2)
+plot(df$X2, main="Do you see any possible clusters in variable 2?",
+     xlab ="Row Index", ylab="df$X2 Value", pch =20, cex =2)
+plot(df$X29, main="Do you see any possible clusters in variable 29?",
+     xlab ="Row Index", ylab="df$X29 Value", pch =20, cex =2)
+plot(df$X49, main="Do you see any possible clusters in variable 49?",
+     xlab ="Row Index", ylab="df$X49 Value", pch =20, cex =2)
+
+
+```
+
+(b) Perform PCA on the 60 observations and plot the first two principal
+component score vectors. Use a different color to indicate
+the observations in each of the three classes. If the three classes
+appear separated in this plot, then continue on to part (c). If
+not, then return to part (a) and modify the simulation so that
+there is greater separation between the three classes. Do not
+continue to part (c) until the three classes show at least some
+separation in the first two principal component score vectors.
+
+
+```{r}
+set.seed(11)
+
+
+```
+
+(c) Perform K-means clustering of the observations with K = 3.
+How well do the clusters that you obtained in K-means clustering
+compare to the true class labels?
+Hint: You can use the table() function in R to compare the true
+class labels to the class labels obtained by clustering. Be careful
+how you interpret the results: K-means clustering will arbitrarily
+number the clusters, so you cannot simply check whether the true
+class labels and clustering labels are the same.
+```{r}
+set.seed(11)
+Kclasses = c(rep(1,20), rep(2,20), rep(3,20))
+
+
+km.out3 <- kmeans(df,3,nstart=50)
+km.out3$cluster
+
+table(km.out3$cluster, Kclasses, dnn=c("Clusters","Class Labels"))
+
+plot(df$X1, col =(km.out3$cluster +1) , main="K-Means Clustering
+Results with K=3", xlab ="Row Index", ylab="df$X1 Value", pch =20, cex =2)
+
+plot(df$X2, col =(km.out3$cluster +1) , main="K-Means Clustering
+Results with K=3", xlab ="Row Index", ylab="df$X2 Value", pch =20, cex =2)
+
+plot(df$X29, col =(km.out3$cluster +1) , main="K-Means Clustering
+Results with K=3", xlab ="Row Index", ylab="df$X29 Value", pch =20, cex =2)
+
+plot(df$X49, col =(km.out3$cluster +1) , main="K-Means Clustering
+Results with K=3", xlab ="Row Index", ylab="df$X49 Value", pch =20, cex =2)
+
+```
+
+Perform K-means clustering with K = 2. Describe your results.
+```{r}
+set.seed(99)
+km.out2 <- kmeans(df,2,nstart=50)
+km.out2$cluster
+
+table(km.out2$cluster, Kclasses, dnn=c("Clusters","Class Labels"))
+
+plot(df$X1, col =(km.out2$cluster +1) , main="K-Means Clustering
+Results with K=2", xlab ="Row Index", ylab="df$X1 Value", pch =20, cex =2)
+
+plot(df$X2, col =(km.out2$cluster +1) , main="K-Means Clustering
+Results with K=2", xlab ="Row Index", ylab="df$X2 Value", pch =20, cex =2)
+
+plot(df$X29, col =(km.out2$cluster +1) , main="K-Means Clustering
+Results with K=2", xlab ="Row Index", ylab="df$X29 Value", pch =20, cex =2)
+
+plot(df$X49, col =(km.out2$cluster +1) , main="K-Means Clustering
+Results with K=2", xlab ="Row Index", ylab="df$X49 Value", pch =20, cex =2)
+
+```
+
+Now perform K-means clustering with K = 4, and describe your
+results.
+```{r}
+set.seed(10)
+km.out4 <- kmeans(df,4,nstart=50)
+km.out4$cluster
+
+table(km.out4$cluster, Kclasses, dnn=c("Clusters","Class Labels"))
+
+plot(df$X1, col =(km.out4$cluster +1) , main="K-Means Clustering
+Results with K=4", xlab ="Row Index", ylab="df$X1 Value", pch =20, cex =2)
+
+plot(df$X2, col =(km.out4$cluster +1) , main="K-Means Clustering
+Results with K=4", xlab ="Row Index", ylab="df$X2 Value", pch =20, cex =2)
+
+plot(df$X29, col =(km.out4$cluster +1) , main="K-Means Clustering
+Results with K=4", xlab ="Row Index", ylab="df$X29 Value", pch =20, cex =2)
+
+plot(df$X49, col =(km.out4$cluster +1) , main="K-Means Clustering
+Results with K=4", xlab ="Row Index", ylab="df$X49 Value", pch =20, cex =2)
+
+
+```
+
+Now perform K-means clustering with K = 3 on the first two
+principal component score vectors, rather than on the raw data.
+That is, perform K-means clustering on the 60 × 2 matrix of
+which the first column is the first principal component score
+vector, and the second column is the second principal.
+```{r}
+
+
+
+```
+
+Using the scale() function, perform K-means clustering with
+K = 3 on the data after scaling each variable to have standard
+deviation one. How do these results compare to those obtained
+in (b)? Explain.
+```{r}
+set.seed(11)
+
+scaled_df <- data.frame(scale(df))
+
+
+print(sd(scaled_df$X1))
+print(sd(scaled_df$X2))
+print(sd(scaled_df$X29))
+print(sd(scaled_df$X39))
+
+km.out3scaled = kmeans(scaled_df,3,nstart=50) #scale
+km.out3scaled$cluster
+
+
+table(km.out3scaled$cluster, Kclasses, dnn=c("Clusters","Class Labels"))
+
+plot(df$X1, col =(km.out3scaled$cluster +1) , main="K-Means Clustering
+Results with K=3 and Scaled  (SD = 1)", xlab ="df$X1 Value", ylab="", pch =20, cex =2)
+
+
+
+plot(df$X2, col =(km.out3scaled$cluster +1) , main="K-Means Clustering
+Results with K=3 and Scaled  (SD = 1)", xlab ="df$X2 Value", ylab="", pch =20, cex =2)
+
+
+plot(df$X29, col =(km.out3scaled$cluster +1) , main="K-Means Clustering
+Results with K=3 and Scaled  (SD = 1)", xlab ="df$X29 Value", ylab="", pch =20, cex =2)
+
+
+plot(df$X49, col =(km.out3scaled$cluster +1) , main="K-Means Clustering
+Results with K=3 and Scaled  (SD = 1)", xlab ="df$X49 Value", ylab="", pch =20, cex =2)
+
+```
+
