@@ -86,8 +86,8 @@ calc_error_rate <- function(svm_model, dataset, true_classes) {
   return(1 - sum(diag(confusion_matrix)) / sum(confusion_matrix))
 }
 
-cat("Training Error Rate:", (1 - calc_error_rate(svm_linear, OJ_train, OJ_train$Purchase)) * 100, "%\n")
-cat("Test Error Rate:", (1 - calc_error_rate(svm_linear, OJ_test, OJ_test$Purchase)) * 100, "%\n")
+cat("Training Error Rate:", 100 * calc_error_rate(svm_linear, OJ_train, OJ_train$Purchase), "%\n")
+cat("Test Error Rate:", 100 * calc_error_rate(svm_linear, OJ_test, OJ_test$Purchase), "%\n")
 
 ```
 
@@ -119,8 +119,8 @@ or hurt the model accuracy
 svm_linear2 <- svm(Purchase ~ . , kernel = "linear", 
                   data = OJ_train, cost = svm_tune$best.parameters)
 
-cat("Training Error Rate:", (1 - calc_error_rate(svm_linear2, OJ_train, OJ_train$Purchase)) * 100, "%\n")
-cat("Test Error Rate:", (1 - calc_error_rate(svm_linear2, OJ_test, OJ_test$Purchase)) * 100, "%\n")
+cat("Training Error Rate:", 100 * calc_error_rate(svm_linear2, OJ_train, OJ_train$Purchase), "%\n")
+cat("Test Error Rate:", 100 * calc_error_rate(svm_linear2, OJ_test, OJ_test$Purchase), "%\n")
 
 ```
 
