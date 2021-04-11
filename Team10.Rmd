@@ -4,14 +4,14 @@ author: 'Team 10: Matthew Sadosuk, Akram Bijapuri, Justin Pender, Alejandro Vale
   Patino'
 date: "4/12/2021"
 output:
+  pdf_document:
+    toc: no
+    toc_depth: '1'
   html_document:
     toc: no
     toc_depth: 1
     toc_float: yes
     df_print: paged
-  pdf_document:
-    toc: no
-    toc_depth: '1'
 ---
 
 
@@ -231,9 +231,10 @@ class3 <- matrix(rnorm(20*50, mean = 2), nrow=20) #simulated random data
 
 df <- data.frame(rbind(class1,class2,class3))
 
-mean(rowMeans(df)[1:20])
-mean(rowMeans(df)[21:40])
-mean(rowMeans(df)[41:60])
+#Verify Mean Shifts:
+cat("Mean of first 20 Rows:", mean(rowMeans(df)[1:20]),"\n")
+cat("Mean of second 20 Rows:", mean(rowMeans(df)[21:40]),"\n")
+cat("Mean of third 20 Rows:", mean(rowMeans(df)[41:60]),"\n")
 
 plot(df$X1, df$X2, main="Do you see any possible clusters?",
       pch =20, cex =2)
@@ -322,7 +323,7 @@ class labels and clustering labels are the same.
 set.seed(11)
 
 
-km.out3 <- kmeans(df,3,nstart=20) #nstart 20: random sets are chosen
+km.out3 <- kmeans(df,centers=3,nstart=20) #centers is k, nstart 20 random sets are chosen
 km.out3$cluster
 km.out3$tot.withinss #we want to minimize
 
@@ -457,8 +458,8 @@ It is important to scale data that is varying in scales, since k-means uses dist
 
 ## Final Notes
 
-Congratulations on completing 10 chapters of Machine Learning! You should all be proud of yourselves.
+Congratulations on completing 10 chapters of Machine Learning! Good Luck on the Final!
 
 - Team 10
 
-![Team10Logo](Team10Logo.png)
+![Team10Logo](Team10Logo.png){width=250px}
