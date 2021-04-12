@@ -1,0 +1,464 @@
+---
+title: "Exam Review"
+author: 'Team 10: Matthew Sadosuk, Akram Bijapuri, Justin Pender, Alejandro Valencia
+  Patino'
+date: "4/12/2021"
+output:
+  html_document:
+    toc: no
+    toc_depth: 1
+    toc_float: yes
+    df_print: paged
+  pdf_document:
+    toc: no
+    toc_depth: '1'
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# {.tabset}
+
+## Chapter 9, Applied exercise 8
+
+For this exercise in chapter 9 we go back and cover support vector classifiers. 
+At the end of the chapter we selected applied exercise 8. This exercise features
+the OJ data set, where we will be seeing how purchase price of OJ is affected by
+the 17 other variables in the dataset
+
+
+To start this problem we need to load in the two libraries: ISLR and e1071, which
+will give us access to the OJ data set. To keep the results consistent we will set 
+the seed. Now we will create a random sample with 800 observations from the OJ
+data set and then we will split the data into a test set and training set
+
+
+
+```{r}
+rm(list = ls())
+
+# 8. This problem involves the OJ data set which is part of the ISLR package
+library(ISLR)
+library(e1071)
+#(a) Create a training set containing a random sample of 800
+# observations, and a test set containing the remaining observations.
+set.seed(5208)
+
+train <- sample(nrow(OJ), 800)
+OJ_train <- OJ[train, ]
+OJ_test <- OJ[-train, ]
+
+```
+
+After initializing all of the parameters we can now start to construct the support
+vector classifier. In the code below we use the svm function and within the function
+we are predicting the purchase price onto the entire dataset,we set the kernel 
+to linear, use the training dataset, and set cost = .01. Now we take the summary 
+of svm_linear, and see that there are 439 support vectors that lay along the 
+hyperplane. 
+
+```{r}
+#(b) Fit a support vector classifier to the training data using
+# cost=0.01, with Purchase as the response and the other variables
+# as predictors. Use the summary() function to produce summary
+# statistics, and describe the results obtained.
+
+svm_linear <- svm(Purchase ~ . , kernel = "linear", data = OJ_train, cost = 0.01)
+summary(svm_linear)
+
+```
+
+In this step, we created a function to calculate the error rate using the model, dataset, and the object being classified. Inside the function, a confusion matrix is created with
+the predicted values from the linear model and the OJ_train dataset. The MSE is then calculated and returned using the values from the confusion matrix. 
+
+```{r}
+#(c) What are the training and test error rates?
+
+# calculate error rate
+calc_error_rate <- function(svm_model, dataset, true_classes) {
+  confusion_matrix <- table(predict(svm_model, dataset), true_classes)
+  return(1 - sum(diag(confusion_matrix)) / sum(confusion_matrix))
+}
+
+cat("Training Error Rate:", 100 * calc_error_rate(svm_linear, OJ_train, OJ_train$Purchase), "%\n")
+cat("Test Error Rate:", 100 * calc_error_rate(svm_linear, OJ_test, OJ_test$Purchase), "%\n")
+
+```
+
+In this step we will tune the svm model to try to improve the accuracy of the model.
+In the function we specify the model type = svm, y-variable, data = OJ, kernel = linear,
+and then display range of costs from .01 to 10. After this we will look at the summary
+of svm_tune to see what the best performance number was. 
+
+
+```{r}
+#(d) Use the tune() function to select an optimal cost. Consider values in the range 0.01 to 10.
+set.seed(5208)
+
+svm_tune <- tune(svm, Purchase ~ . , data = OJ_train, kernel = "linear", 
+                 ranges = list(cost = seq(0.01, 10, length=50)))
+
+summary(svm_tune)
+
+bestsvm <- svm_tune$best.model
+
+```
+
+
+In this step we look at the summary of svm_tune and look to see what cost gives
+the best performance in the model. From looking at the summary list it looked to be
+a cost of 5.01 gave the best performance. So to make sure this is correct we now
+use the best.parameters test method to identify the best cost. After this we
+look at the training and test error rates to see how the tune we did above improved
+or hurt the model accuracy
+
+
+```{r}
+#(e) Compute the training and test error rates using this new value for cost.
+
+
+cat("Training Error Rate:", 100 * calc_error_rate(bestsvm, OJ_train, OJ_train$Purchase), "%\n")
+cat("Test Error Rate:", 100 * calc_error_rate(bestsvm, OJ_test, OJ_test$Purchase), "%\n")
+
+```
+
+
+For steps f and g we will follow the same steps that were done in b to e. The only
+input being changed in the model is the kernel which will be set to radial in f
+and poly for the second one. At the end I will compare the test and train error rate
+results and publish which model will be the best
+
+
+In part c and e we are still using the function that was made above, but the only
+part we will be changing is the name of the model to the new svm variable. 
+
+```{r}
+#(f) Repeat parts (b) through (e) using a support vector machine with a radial kernel. Use the default value for gamma.
+# part b: fitting the support vector 
+set.seed(5208)
+svm_radial <- svm(Purchase ~ . , data = OJ_train, kernel = "radial")
+summary(svm_radial)
+
+# part c: Calculating the test and error rate
+cat("Training Error Rate:", 100 * calc_error_rate(svm_radial, OJ_train, OJ_train$Purchase), "%\n")
+cat("Test Error Rate:", 100 * calc_error_rate(svm_radial, OJ_test, OJ_test$Purchase), "%\n")
+
+# part d: Adding the costs from .01 to 10
+set.seed(5208)
+svm_tune2 <- tune(svm, Purchase ~ . , data = OJ_train, kernel = "radial",
+                 ranges = list(cost = seq(0.01, 10), length = 50))
+
+summary(svm_tune)
+
+best2 <- svm_tune2$best.model
+
+
+# part e: Take the best performance from part d and set that equal to the cost input
+
+cat("Training Error Rate:", 100 * calc_error_rate(best2, OJ_train, OJ_train$Purchase), "%\n")
+cat("Test Error Rate:", 100 * calc_error_rate(best2, OJ_test, OJ_test$Purchase), "%\n")
+
+```
+
+
+
+
+
+```{r}
+#(g) Repeat parts (b) through (e) using a support vector machine with a polynomial kernel. Set degree=2.
+
+# part b: fitting the support vector 
+set.seed(5208)
+
+svm_poly <- svm(Purchase ~ . , data = OJ_train, kernel = "poly", degree = 2)
+summary(svm_poly)
+
+# part c: Calculating the test and error rate
+cat("Training Error Rate:", 100 * calc_error_rate(svm_poly, OJ_train, OJ_train$Purchase), "%\n")
+cat("Test Error Rate:", 100 * calc_error_rate(svm_poly, OJ_test, OJ_test$Purchase), "%\n")
+
+# part d: Adding the costs from .01 to 10
+
+set.seed(5208)
+svm_tune3 <- tune(svm, Purchase ~ . , data = OJ_train, kernel = "poly", 
+                 degree = 2, ranges = list(cost = seq(0.01, 10), length = 50))
+
+summary(svm_tune)
+best3 <- svm_tune3$best.model
+# part e: Take the best performance from part d and set that equal to the cost input
+
+svm_poly2 <- svm(Purchase ~ . , data = OJ_train, kernel = "poly", 
+                degree = 2, cost = svm_tune$best.parameters$cost)
+
+cat("Training Error Rate:", 100 * calc_error_rate(best3, OJ_train, OJ_train$Purchase), "%\n")
+cat("Test Error Rate:", 100 * calc_error_rate(best3, OJ_test, OJ_test$Purchase), "%\n")
+```
+
+
+(h) Overall, which approach seems to give the best results on this data?
+
+Overall, radial basis kernel seems to be producing minimum misclassification 
+error on training set but the linear kernel performs better on test data.
+
+## Chapter 10, Applied Exercise 10
+
+
+**A:** 
+Generate a simulated data set with 20 observations in each of
+three classes (i.e. 60 observations total), and 50 variables.
+Hint: There are a number of functions in R that you can use to
+generate data. One example is the rnorm() function; runif() is
+another option. Be sure to add a mean shift to the observations
+in each class so that there are three distinct classes.
+
+
+```{r}
+#(a) Generate a simulated data set with 20 observations in each of three classes 
+set.seed(11)
+
+## Creating variables
+class1 <- data.frame(replicate(50, rnorm(20, mean = -2))) #simulated random data
+class2 <- data.frame(replicate(50, rnorm(20, mean = 0))) #simulated random data
+class3 <- data.frame(replicate(50, rnorm(20, mean = 2))) #simulated random data
+
+set.seed(11)
+## Another way to create variables that generates a slightly different image
+class1 <- matrix(rnorm(20*50, mean = -2), nrow=20) #simulated random data
+class2 <- matrix(rnorm(20*50, mean = 0), nrow=20) #simulated random data
+class3 <- matrix(rnorm(20*50, mean = 2), nrow=20) #simulated random data
+
+df <- data.frame(rbind(class1,class2,class3))
+
+mean(rowMeans(df)[1:20])
+mean(rowMeans(df)[21:40])
+mean(rowMeans(df)[41:60])
+
+plot(df$X1, df$X2, main="Do you see any possible clusters?",
+      pch =20, cex =2)
+
+## Creating labels for each class
+Kclasses = c(rep(1,20), rep(2,20), rep(3,20))
+
+plot(df$X1, df$X2, main="Do you see any possible clusters?",
+      pch =20, cex =2, col=Kclasses+1)
+
+```
+
+**B:** 
+Perform PCA on the 60 observations and plot the first two principal
+component score vectors. Use a different color to indicate
+the observations in each of the three classes. If the three classes
+appear separated in this plot, then continue on to part (c). If
+not, then return to part (a) and modify the simulation so that
+there is greater separation between the three classes. Do not
+continue to part (c) until the three classes show at least some
+separation in the first two principal component score vectors.
+
+
+```{r}
+set.seed(11)
+## Performing PCA on df
+pr.out <- prcomp(df, scale=TRUE)
+
+## Importance of Components
+summary(pr.out)
+
+names(pr.out)
+
+## principal component loading vector for PC1 and PC2 (eigenvectors)
+pr.out$rotation[,1:2] 
+
+## The sum of squares of the loadings for each Principal Component will equal 1
+sum(pr.out$rotation[,1]^2)
+
+## The principal component scores for PC1 for each observation in the data set
+## The goal of PCA is to maximize this variation
+pr.out$x[,1]
+mean(pr.out$x[,1])
+
+## Proportion of variance explained by PC1
+var(pr.out$x[,1])
+
+pr.var <- pr.out$sdev^2
+pr.var[1]
+
+pve <- pr.var/sum(pr.var)
+
+
+## Plotting the proportion of variance explained
+plot(pve, main = "Proportion of Variance Explained by PC1-PC5",
+     xlab="Principal Component", 
+     ylab="Proportion of Variance Explained",
+     ylim=c(0,1), xlim=c(1,5),
+     type='b')
+
+
+## Plotting the scores for the first two principle components and their loading vectors
+biplot(pr.out, scale=0)
+legend('bottomleft', c('Scores ($x)', 'Loadings ($rotation)'), 
+       col=c(1,2), pch=15)
+
+## Plotting scores for PC1 and PC2
+plot(pr.out$x, col=Kclasses+1, 
+     pch=20, cex=2,
+     main='Scores for PC1 and PC2')
+
+
+```
+
+**C:** 
+Perform K-means clustering of the observations with K = 3.
+How well do the clusters that you obtained in K-means clustering
+compare to the true class labels?
+Hint: You can use the table() function in R to compare the true
+class labels to the class labels obtained by clustering. Be careful
+how you interpret the results: K-means clustering will arbitrarily
+number the clusters, so you cannot simply check whether the true
+class labels and clustering labels are the same.
+
+```{r}
+set.seed(11)
+
+
+km.out3 <- kmeans(df,3,nstart=20) #nstart 20: random sets are chosen
+km.out3$cluster
+km.out3$tot.withinss #we want to minimize
+
+#Let's look at why nstart argument matters:
+nstart_withinss = rep(0,20)
+set.seed(11)
+for (i in 1:length(nstart_withinss)){
+  km.out3 <- kmeans(df,3,nstart=i)
+  nstart_withinss[i] <- km.out3$tot.withinss
+}
+plot(nstart_withinss, main = "Review of optimal nstart",
+     xlab="nstart", 
+     ylab="Total Within SS for kmeans (we want min)",
+     type='b')
+
+#Table of clusters vs how many classes we have:
+table(km.out3$cluster, Kclasses, dnn=c("Clusters","Class Labels"))
+
+#Plots:
+plot(df$X1, df$X2, col =(km.out3$cluster +1) , main="K-Means Clustering
+Results with K=3", xlab ="",ylab ="", pch =20, cex =2)
+
+plot(df$X49, df$X50, col =(km.out3$cluster +1) , main="K-Means Clustering
+Results with K=3", xlab ="",ylab ="", pch =20, cex =2)
+
+```
+
+**D:** 
+Perform K-means clustering with K = 2. Describe your results.
+```{r}
+set.seed(11)
+km.out2 <- kmeans(df,2,nstart=20)
+km.out2$cluster
+km.out2$tot.withinss
+
+table(km.out2$cluster, Kclasses, dnn=c("Clusters","Class Labels"))
+
+plot(df$X1, df$X2, col =(km.out2$cluster +1) , main="K-Means Clustering
+Results with K=2", xlab ="",ylab ="", pch =20, cex =2)
+
+```
+
+Describe your results: The model splits K into 2 classes, which is a much higher total within Sum of Squares of 4842 compared to k = 3: totalwithinSS: 2820. We want to minimize this without overfitting. You can see in the graph, using two clusters is not an optimal way to measure this data compared to k=3.
+
+**E:** 
+Now perform K-means clustering with K = 4. Describe your results.
+```{r}
+set.seed(11)
+km.out4 <- kmeans(df,4,nstart=20)
+km.out4$cluster
+km.out4$tot.withinss
+
+
+table(km.out4$cluster, Kclasses, dnn=c("Clusters","Class Labels"))
+
+plot(df$X1, df$X2, col =(km.out4$cluster +1) , main="K-Means Clustering
+Results with K=4", xlab ="",ylab ="", pch =20, cex =2)
+
+```
+
+Describe your results: The model splits K into 4 classes now. Spefically, one of the classes is split into 2, compared to k=3.  You can see in the graph, using 4 clusters is not doing well to measure the bottom right cluster. 
+
+For the total within sum of squares, we actually do get a lower 2722.595, but it is actually a much smaller jump. This is always going to decrease as k gets higher, since that is what kmeans algorithm is trying to do. So to not force an overfit, we should look at an elbow plot and find the optimal k from there. 
+
+
+```{r}
+#Pick the best K using elbow plot
+set.seed(11)
+kmax<-15
+totwithiness<-rep(0,kmax)
+for (k in 1:kmax){
+  totwithiness[k] =kmeans(df,k,nstart=20)$tot.withinss
+}
+plot(1:kmax,totwithiness,type="b",pch= 19, frame = FALSE, 
+     main = "Choosing K Clusters (We want best Elbow)",
+     xlab="Number of clusters K", ylab="Total within-clusters sum of squares")
+```
+
+In the above plot, you can see the elbow bends at k = 3 which is why that is the best k to use.
+
+**F:** 
+Now perform K-means clustering with K = 3 on the first two
+principal component score vectors, rather than on the raw data.
+That is, perform K-means clustering on the 60 × 2 matrix of
+which the first column is the first principal component score
+vector, and the second column is the second principal.
+```{r}
+set.seed(10)
+pc12 <- pr.out$x[,1:2]
+
+km.out.pca <- kmeans(pc12,3,nstart=50)
+km.out.pca$cluster
+
+table(km.out.pca$cluster, Kclasses, dnn=c("Clusters","Class Labels"))
+
+plot(pc12[,1], pc12[,2], col =(km.out.pca$cluster +1) , main="K-Means Clustering
+Results on PCA vectors", pch =20, cex =2)
+
+```
+
+**G:** 
+Using the scale() function, perform K-means clustering with
+K = 3 on the data after scaling each variable to have standard
+deviation one. How do these results compare to those obtained
+in (b)? Explain.
+```{r}
+set.seed(11)
+
+cat("SD before scale:", sd(df$X1),"\n")
+
+scaled_df <- data.frame(scale(df))
+
+cat("SD after scale:", sd(scaled_df$X1),"\n")
+
+
+km.out3scaled = kmeans(scaled_df,3,nstart=20) #scale
+km.out3scaled$cluster
+km.out3scaled$tot.withinss
+
+table(km.out3scaled$cluster, Kclasses, dnn=c("Clusters","Class Labels"))
+
+
+plot(df$X1, df$X2, col =(km.out3scaled$cluster +1) ,main="K-Means Clustering
+Results with K=3 and Scaled  (SD = 1)", xlab ="",ylab ="", pch =20, cex =2)
+
+```
+
+The scale() of kmeans plots the same classes as without the scale because the mean shifts we made were already standardized. We took a mean of 2, mean of 0, and mean of -2, which is what our classes is. By standardizing everything with a SD of 1, we did successfully scale the data but since the data was already comparable, this does not change the output.
+
+It is important to scale data that is varying in scales, since k-means uses distance to measure between points, and if it was unscaled it would make one feature have a higher impact than the others. Since this is unsupervised, we are using the features as a measure.
+
+
+## Final Notes
+
+Congratulations on completing 10 chapters of Machine Learning! You should all be proud of yourselves.
+
+- Team 10
+
+![Team10Logo](Team10Logo.png)
